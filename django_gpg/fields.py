@@ -2,15 +2,15 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from gpg import client
+from . import gpg
 
 
 def validate_public_key(value):
-    with client() as gpg:
-        result = gpg.import_keys(value)
-        if 'IMPORT_OK' not in result.stderr:
-            msg = result.stderr.split('\n')[0]
-            raise ValidationError(_(msg))
+    try:
+        with gpg.client(import_keys=[value]):
+            pass
+    except ValueError as e:
+        raise ValidationError(_(e.message))
 
 
 class PublicKeyField(models.TextField):

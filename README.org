@@ -24,35 +24,56 @@ A GPG implementation for Django.
 
 3. Install [[https://www.gnupg.org/download/index.en.html][GnuPG]] on your system (e.g. =apt-get install gnupg=)
 
-* Fields
+4. Run =python manage.py migrate= to create the new models
 
-Use these GPG friendly fields in your django models.
+* Configuration
 
-** =PublicKeyField=
-
-A model field for a ASCII-armored formatted Public GPG Key.
+Include these settings in your =settings.py= to customize django-gpg.
+Or just leave this out entirely to use the defaults shown here.
 
 #+BEGIN_SRC python
-  from django.db import models
-  from django_gpg.fields import PublicKeyField
-
-  class MyModel(models.Model):
-      public_key = PublicKeyField(required=True)
+  django_gpg = {
+      # Require a public key for each user
+      'PUBLIC_KEY_REQUIRED': True
+  }
 #+END_SRC
 
-* GPG Tools
+* Models
 
-** =Client=
+Each user will now have an associated GPG Profile.  You can add public
+keys via the django admin.
 
-Obtain a new, temporary GnuPG client.  Working area is deleted after
-the context manager exits.
+[[file:screenshots/admin.png]]
+
+You can encrypt messages using the model method.
 
 #+BEGIN_SRC python
-  form django_gpg import gpg
+  friend = User.objects.first()
+  secret = me.gpgprofile.encrypt('HOOCHIE MAMA')
+  print(secret.split('\n'))
+  ['-----BEGIN PGP MESSAGE-----',
+   '',
+   'hQIMA2DlyYO6tqUPARAAjOUCQZQR4TXwQhxa7x6BcrnGkrwu4iYk5T/6BqHce0Gu',
+   '81GBVwm04e2ptHO680y1jFqipdx8YLhP2wIjUurVDvEoLLOz/ILsFh8t3vvEGzJj',
+   'NN8GR/OqiYcf66Qr/FnfPvd1+KX0zRy3LC96ovGUp1SVGHvniAW8Er20sQ8lLOvs',
+   'MCGH7oIwhGcnE7CeR6RuqPNz2IKCquq6yV3wDffBiuglVAu21woh7FL3UIG2T/Sc',
+   'YM9Yn9PIY5P4fdVv3X+6f3LL7chbRmGtttw/9UYt4QgVDouUu5NR5H8ZZ1waqfbs',
+   'E0aMn93JYMIVEW3uICyNhfLMBbuJS/a/XGwCc18/j5n6Mst+PAljjQD70V9rCYqZ',
+   'LorX/3+lx02GSwdg6Yrz/0wndh2iDx7CEEn1vo0MSF6VV7stjhaOngRFFVhUlV2E',
+   'dPNZceVk8mqS/TUQL4Rvp8U6jTB+c8vA3ofS6nYl8AGH9Khd21VEIxzgCk2kkREN',
+   'Wknj3r6HUROAhewPrX+oGA/TFkiX1XSlOGP2fUnV09wCVJUPaIl0fWv6CcAH0gZ4',
+   'gQNeQnKZTMuRg++f7K+RkXIt9p1xkBd2c3kS24LVin6/G8lY6n68Y02GRJHvq1of',
+   'yNvhiufy+Tmu30dwmjPjB+9CnD4QCTvvI7ML3H1cJ62nCjSVKqa1M20+7p6urPrS',
+   'RwE7dQd3EInA55CBWJZ4HfPmqEnScwoBO4WC3xqL+CGXlI66L70+IebnVYDncTJX',
+   '6h58GjoXS4JJdghP48VZtG5TG+XOsYSs',
+   '=inGo',
+   '-----END PGP MESSAGE-----',
+   '']
+#+END_SRC
 
-  my_key_text = '''...'''
+Use queryset methods to encrypt a message for multiple users.
 
-  with gpg.client() as g:
-      response = gpg.import_keys(my_key_text)
-      print(response.results)
+#+BEGIN_SRC python
+  from django_gpg.models import GpgProfile
+  message = GpgProfile.objects.filter(user=[...]).encrypt('hoochie mama')
 #+END_SRC
