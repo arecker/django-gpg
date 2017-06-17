@@ -9,8 +9,7 @@ A GPG implementation for Django.
 1. Install the =django-gpg= package
 
    #+BEGIN_SRC sh
-     git clone https://github.com/arecker/django-gpg.git && cd django-gpg
-     python setup.py install
+     pip install django-gpg
    #+END_SRC
 
 2. Add "django_gpg" to your INSTALLED_APPS setting
