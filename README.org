@@ -1,0 +1,58 @@
+#+TITLE: Django GPG
+
+[[https://travis-ci.org/arecker/reckerops][file:https://travis-ci.org/arecker/django-gpg.svg?branch=master]]
+
+A GPG implementation for Django.
+
+* Quick Start
+
+1. Install the =django-gpg= package
+
+   #+BEGIN_SRC sh
+     git clone https://github.com/arecker/django-gpg.git && cd django-gpg
+     python setup.py install
+   #+END_SRC
+
+2. Add "django_gpg" to your INSTALLED_APPS setting
+
+   #+BEGIN_SRC python
+     INSTALLED_APPS = [
+         # ...
+         'django_gpg',
+     ]
+   #+END_SRC
+
+3. Install [[https://www.gnupg.org/download/index.en.html][GnuPG]] on your system (e.g. =apt-get install gnupg=)
+
+* Fields
+
+Use these GPG friendly fields in your django models.
+
+** =PublicKeyField=
+
+A model field for a ASCII-armored formatted Public GPG Key.
+
+#+BEGIN_SRC python
+  from django.db import models
+  from django_gpg.fields import PublicKeyField
+
+  class MyModel(models.Model):
+      public_key = PublicKeyField(required=True)
+#+END_SRC
+
+* GPG Tools
+
+** =Client=
+
+Obtain a new, temporary GnuPG client.  Working area is deleted after
+the context manager exits.
+
+#+BEGIN_SRC python
+  form django_gpg import gpg
+
+  my_key_text = '''...'''
+
+  with gpg.client() as g:
+      response = gpg.import_keys(my_key_text)
+      print(response.results)
+#+END_SRC
