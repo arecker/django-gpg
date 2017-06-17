@@ -4,11 +4,10 @@ from __future__ import unicode_literals
 from django.test import SimpleTestCase
 
 from . import fields
+from . import gpg
 
 
-class ValidatePublicKeyTestCase(SimpleTestCase):
-    def test_valid_key(self):
-        valid_key = '''
+VALID_KEY = '''
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFe103wBEACdl170uu6o8Q5dZOB8EwXLBowIvFH5diB/U3dG6kbsTTKofwo2
@@ -199,8 +198,23 @@ UVZrEnQUQdQwuXGkcA==
 =Jhl8
 -----END PGP PUBLIC KEY BLOCK-----
 '''
-        fields.validate_public_key(valid_key)
+
+
+class ValidatePublicKeyTestCase(SimpleTestCase):
+    def test_valid_key(self):
+        fields.validate_public_key(VALID_KEY)
 
     def test_invalid_key(self):
         with self.assertRaises(fields.ValidationError):
             fields.validate_public_key('not a real key stupid')
+
+
+class GpgTestCase(SimpleTestCase):
+    def test_import_key(self):
+        with gpg.client(import_keys=[VALID_KEY]) as g:
+            self.assertEqual(len(g.list_keys()), 1)
+
+    def test_encrypt(self):
+        actual = gpg.encrypt('HOOCHIEMAMA', recipient_keys=[VALID_KEY])
+        self.assertIn('-----BEGIN PGP MESSAGE-----', actual)
+        self.assertIn('-----END PGP MESSAGE-----', actual)
