@@ -11,7 +11,7 @@ setup(
     version='0.2.0',
     packages=find_packages(),
     install_requires=[
-        'Django==1.11.2',
+        'Django==1.11.28',
         'gnupg==2.3.0',
     ],
     include_package_data=True,
